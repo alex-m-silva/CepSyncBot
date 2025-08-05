@@ -1,4 +1,5 @@
-﻿using Domain.Iterfaces.Repositories;
+﻿using Application.Adapters;
+using Domain.Iterfaces.Repositories;
 using Domain.Iterfaces.Services;
 using Domain.Models;
 using Infrastructure.Data;
@@ -19,24 +20,43 @@ namespace Application.Services
             _addressRepository = addressRepository;
         }
 
-        public Task AddAsync(List<AddressModel> addresses)
+        public  async Task<List<AddressModel>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            var address = await _addressRepository.GetAllAsync();
+            if(address == null)
+            {
+                throw new Exception("Não foi possivel buscar os endereços");
+            }
+            return AddressAdapter.MapForModelList(address);
         }
 
-        public Task<List<AddressModel>> GetAllAsync()
+        public async Task<AddressModel> GetZipCodeAsync(string robot)
         {
-            throw new NotImplementedException();
+            var address = await _addressRepository.GetZipCodeAsync(robot);
+            if (address == null)
+            {
+                throw new Exception("Não foi possivel buscar o endereço");
+            }
+            address.Status = Domain.Enums.EnumStatus.EmAndamento;
+            address.Robo = robot;
+            await _addressRepository.UpdateDataAsync(address);
+            return AddressAdapter.MapForModel(address);
         }
 
-        public Task<AddressModel> GetZipCodeAsync(string robot)
+        public async Task AddAsync(List<AddressModel> addresses)
         {
-            throw new NotImplementedException();
+            var domain = AddressAdapter.MapForEntityList(addresses);
+            await _addressRepository.AddAsync(domain);
         }
-
-        public Task<bool> UpdateDataAsync(AddressModel address)
+        public async Task<bool> UpdateDataAsync(AddressModel addressModel)
         {
-            throw new NotImplementedException();
+            var address = await _addressRepository.GetByIdAsync(addressModel.Id);
+            if (address == null)
+            {
+                throw new Exception("Cep não encontrado");
+            }
+            address = AddressAdapter.MapForEntityToUpdate(addressModel);
+            return await _addressRepository.UpdateDataAsync(address);
         }
     }
 }

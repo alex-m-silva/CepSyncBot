@@ -7,7 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Adapter\" />
+    <Compile Remove="Adapter\**" />
+    <EmbeddedResource Remove="Adapter\**" />
+    <None Remove="Adapter\**" />
   </ItemGroup>
 
   <ItemGroup>
